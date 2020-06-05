@@ -1,6 +1,9 @@
 import streamlit as st
 import datetime
 import numpy as np
+import random
+from PIL import Image
+from palettable.colorbrewer.sequential import Greens_9
 
 def get_stopwords(linguagem = 'pt'):
   if linguagem == 'en':
@@ -40,7 +43,7 @@ def twitter_api(hashtag,num_tweets,linguagem):
     # cria um objeto api
     api = tweepy.API(auth)
 
-    num_max = 200 #(Defiinimos uma variavel maxima para n estourar os limites que temos)
+    num_max = 200 #(Definimos uma variavel maxima para n estourar os limites que temos)
     num_tweets = num_max if num_max <= num_tweets else num_tweets #proteção para numero de requests
     tweets = []
     for tweet in tweepy.Cursor(api.search,q=hashtag,count=num_tweets, tweet_mode="extended",lang=linguagem).items(num_tweets): #lang="pt", since="2017-04-03"
@@ -56,28 +59,34 @@ def twitter_api(hashtag,num_tweets,linguagem):
     string_total_n_patterns =  string_total_n_patterns.replace("`","")
     return string_total_n_patterns
 
-def cria_nuvem_de_palavras(texto,word_cloud_space,collocations,background_color,custom_max_words,custom_stopwords):
+## Função pra escala de cinza
+def grey_color_func(word, font_size, position, orientation, random_state=None,
+                    **kwargs):
+    return "hsl(0, 0%%, %d%%)" % random.randint(60, 100)
+
+def color_func(word, font_size, position, orientation, random_state=None, **kwargs):
+    return tuple(Greens_9.colors[random.randint(2,8)])
+
+def cria_nuvem_de_palavras(texto,word_cloud_space,collocations,background_color,custom_max_words,custom_stopwords,custom_seed,gray_scale):
   import matplotlib.pyplot as plt
-  from wordcloud import WordCloud
+  import stylecloud
 
   stopwords = get_stopwords(linguagem)
-
-  print ("There are {} words in the combination of all review.".format(len(texto)))
 
   # Create stopword list:
   stopwords = set(stopwords)
   stopwords.update(["tweet","twitter", "rt"])
   stopwords.update(custom_stopwords)
 
-  # Generate a word cloud image
-  wordcloud = WordCloud(stopwords=stopwords, background_color=background_color,collocations = collocations,max_words=custom_max_words).generate(texto)
+  stylecloud.gen_stylecloud(text=texto,
+                          icon_name='fas fa-dog',
+                          palette='colorbrewer.diverging.Spectral_11',
+                          background_color=background_color,
+                          gradient='horizontal',
+                          custom_stopwords = stopwords,
+                          output_name='wordcloud.png')
 
-  # Display the generated image:
-  # the matplotlib way:
-  plt.imshow(wordcloud, interpolation='bilinear')
-  plt.axis("off")
-  word_cloud_space.pyplot()
-
+  word_cloud_space.image('wordcloud.png')
 
 hashtag,num_tweets,linguagem = slidebar()
 
@@ -103,17 +112,26 @@ custom_stopwords = st.text_input('Stopwords customizadas separadas por virgula',
 custom_stopwords = custom_stopwords.replace(' ','').split(',')
 
 st.write(custom_stopwords)
-st.markdown(' ')
-st.markdown(' ')
+st.write(' ')
+st.write(' ')
 
 collocations = st.checkbox("Considerar palavras em conjunto")#
 st.write("> If true, same words can appear several times in the image, but if you disable that, you won't get 'black culture' or 'lets go'.")
 
-st.markdown(' ')
+st.write(' ')
+st.write(' ')
+
+gray_scale = st.checkbox("Cores das palavras em escala de cinza?")#
+
 st.markdown(' ')
 background_color =  st.selectbox(
     'Qual cor de fundo',
      ['white','black','red','blue']) #cor de fundo so pode por enquanto 'black', 'white', 'red', 'blue'
 
+st.markdown(' ')
+st.markdown(' ')
+##Variaveis que o usuario vai poder editar wordcloud
+custom_seed = st.number_input('Seed WordCloud',  min_value=0, max_value=10, value=3) #Palavras que quer tirar da nuvem de palavras
 
-cria_nuvem_de_palavras(texto,word_cloud_space,collocations,background_color,custom_max_words,custom_stopwords)
+st.markdown(' ')
+cria_nuvem_de_palavras(texto,word_cloud_space,collocations,background_color,custom_max_words,custom_stopwords,custom_seed,gray_scale)
