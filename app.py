@@ -4,6 +4,15 @@ import numpy as np
 import random
 from PIL import Image
 from palettable.colorbrewer.sequential import Greens_9
+import os
+from dotenv import load_dotenv
+load_dotenv()
+
+api_key = os.getenv("api_key")
+api_key_secret = os.getenv("api_key_secret")
+access_token = os.getenv("access_token")
+access_token_secret = os.getenv("access_token_secret")
+
 
 def get_stopwords(linguagem = 'pt'):
   if linguagem == 'en':
@@ -32,13 +41,12 @@ def twitter_api(hashtag,num_tweets,linguagem):
     
     # acessar a aba "Keys and Access Tokens"
     # passa o Consumer Key e o Consumer Secret
-    auth = tweepy.OAuthHandler('yE2PLUrZKOLWjzeQffoO2XS0y', 'nyDKJUmxBfltfq771hOCMz7gqZD7x6g7CFhguw6uurAAF2WunA')
+    auth = tweepy.OAuthHandler(api_key, api_key_secret)
 
     # define o token de acesso
     # para criar basta clicar em "Create my access token"
     # passa o "Access Token" e o "Access Token Secret"
-    auth.set_access_token('1266783018351558668-euemNhqzmom8Fvg6XxHUJrKxxR5NAy',
-            'nQuBusDWGWTuhxSf6MKmONehgziBau2ZZgRLZ77AeaRcs')
+    auth.set_access_token(access_token, access_token_secret)
 
     # cria um objeto api
     api = tweepy.API(auth)
@@ -46,7 +54,7 @@ def twitter_api(hashtag,num_tweets,linguagem):
     num_max = 200 #(Definimos uma variavel maxima para n estourar os limites que temos)
     num_tweets = num_max if num_max <= num_tweets else num_tweets #proteção para numero de requests
     tweets = []
-    for tweet in tweepy.Cursor(api.search,q=hashtag,count=num_tweets, tweet_mode="extended",lang=linguagem).items(num_tweets): #lang="pt", since="2017-04-03"
+    for tweet in tweepy.Cursor(api.search,q=hashtag,count=num_tweets, tweet_mode="extended",lang=linguagem, wait_on_rate_limit=True).items(num_tweets): #lang="pt", since="2017-04-03"
         tweets.append(tweet.full_text)
 
     string_total = ' '.join(tweets)
@@ -78,15 +86,20 @@ def cria_nuvem_de_palavras(texto,word_cloud_space,collocations,background_color,
   stopwords.update(["tweet","twitter", "rt"])
   stopwords.update(custom_stopwords)
 
+  
   stylecloud.gen_stylecloud(text=texto,
-                          icon_name='fas fa-dog',
-                          palette='colorbrewer.diverging.Spectral_11',
-                          background_color=background_color,
-                          gradient='horizontal',
-                          custom_stopwords = stopwords,
-                          output_name='wordcloud.png')
+                            icon_name='fas fa-dog',
+                            palette='colorbrewer.diverging.Spectral_11',
+                            background_color=background_color,
+                            gradient='horizontal',
+                            custom_stopwords = stopwords,
+                            output_name='wordcloud.png')
 
   word_cloud_space.image('wordcloud.png')
+
+ 
+
+
 
 hashtag,num_tweets,linguagem = slidebar()
 
@@ -134,4 +147,9 @@ st.markdown(' ')
 custom_seed = st.number_input('Seed WordCloud',  min_value=0, max_value=10, value=3) #Palavras que quer tirar da nuvem de palavras
 
 st.markdown(' ')
-cria_nuvem_de_palavras(texto,word_cloud_space,collocations,background_color,custom_max_words,custom_stopwords,custom_seed,gray_scale)
+
+
+if len(texto) > 2:
+  cria_nuvem_de_palavras(texto,word_cloud_space,collocations,background_color,custom_max_words,custom_stopwords,custom_seed,gray_scale)
+else:
+  word_cloud_space.markdown('Não encontramos palavras para sua busca! :(')
