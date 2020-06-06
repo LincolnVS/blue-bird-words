@@ -1,17 +1,16 @@
 import streamlit as st
-import datetime
-import numpy as np
-import random
-from PIL import Image
-from palettable.colorbrewer.sequential import Greens_9
-import os
 from dotenv import load_dotenv
+import os
 load_dotenv()
+
+with open("style.css") as f:
+    st.markdown('<style>{}</style>'.format(f.read()), unsafe_allow_html=True)
 
 api_key = os.getenv("api_key")
 api_key_secret = os.getenv("api_key_secret")
 access_token = os.getenv("access_token")
 access_token_secret = os.getenv("access_token_secret")
+
 
 
 def get_stopwords(linguagem = 'pt'):
@@ -56,7 +55,7 @@ def twitter_api(hashtag,num_tweets,linguagem):
     tweets = []
     for tweet in tweepy.Cursor(api.search,q=hashtag,count=num_tweets, tweet_mode="extended",lang=linguagem, wait_on_rate_limit=True).items(num_tweets): #lang="pt", since="2017-04-03"
         tweets.append(tweet.full_text)
-
+        
     string_total = ' '.join(tweets)
     string_total_n_patterns = re.sub(r'(#|@)(\w+|)|(https:|http:)[^\s]+', '', string_total) 
 
@@ -67,15 +66,78 @@ def twitter_api(hashtag,num_tweets,linguagem):
     string_total_n_patterns =  string_total_n_patterns.replace("`","")
     return string_total_n_patterns
 
-## Função pra escala de cinza
-def grey_color_func(word, font_size, position, orientation, random_state=None,
-                    **kwargs):
-    return "hsl(0, 0%%, %d%%)" % random.randint(60, 100)
+def texto_2_color_and_palette(text):
+  if text == 'Gradiente - Estados Unidos':
+    color = ['#ecf0f1', '#3498db', '#e74c3c']
+    palette = None
+  elif text == 'Amarelo':
+    color = ['yellow']
+    palette = None
+  elif text == 'Azul':
+    color = ['#1DA1F2']
+    palette = None
+  elif text == 'Vermelho':
+    color = ['#c0392b']
+    palette = None
+  elif text == 'Branco':
+    color = ['#ffffff']
+    palette = None
+  elif text == 'Gradiente - Escala de Cinza':
+    color = ['#f0f0f0', '#a0a0a0', '#f0f0f0']
+    palette = None
+  elif text == 'Gradiente - Spectral':
+    color = None
+    palette = 'colorbrewer.diverging.Spectral_10'
+  elif text == 'Gradiente - Bold':
+    color = None
+    palette = 'cartocolors.qualitative.Bold_5'
+  elif text == 'Gradiente - Pastel':
+    color = None
+    palette = 'colorbrewer.sequential.YlOrBr_3'
+  else:
+    color = None
+    palette = 'colorbrewer.diverging.Spectral_11'
+  return color, palette
 
-def color_func(word, font_size, position, orientation, random_state=None, **kwargs):
-    return tuple(Greens_9.colors[random.randint(2,8)])
+def texto_bg_2_color(text):
+  if text == 'Preto':
+    color = 'black'
+  elif text == 'Branco':
+    color = 'white'
+  elif text == 'Vermelho':
+    color = '#c0392b'
+  elif text == 'Azul':
+    color = '#1DA1F2'
+  else:
+    color = '#1DA1F2'
+  return color
 
-def cria_nuvem_de_palavras(texto,word_cloud_space,collocations,background_color,custom_max_words,custom_stopwords,custom_seed,gray_scale):
+def texto_2_icon(text):
+  if text == 'Padrão (Nuvem)':
+    icone = 'fas fa-cloud'
+  elif text == 'Twitter':
+    icone = 'fab fa-twitter'
+  elif text == 'Box':
+    icone = 'fas fa-square'
+  elif text == 'Cachorro':
+    icone = 'fas fa-dog'
+  elif text == 'Gato':
+    icone = 'fas fa-cat'
+  elif text == 'Aranha':
+    icone = 'fas fa-spider'
+  elif text == 'Fantasma':
+    icone = 'fas fa-ghost'
+  elif text == 'Circulo':
+    icone = 'fas fa-circle'
+  elif text == 'Biohazard':
+    icone = 'fas fa-biohazard'
+  elif text == 'Cerebro':
+    icone = 'fas fa-brain'
+  else:
+    icone = 'fas fa-cloud'
+  return icone
+
+def cria_nuvem_de_palavras(texto,word_cloud_space,collocations,background_color,custom_max_words,custom_stopwords,custom_seed,font_color,invertido,icone_escolhido,gradiente):
   import matplotlib.pyplot as plt
   import stylecloud
 
@@ -86,20 +148,23 @@ def cria_nuvem_de_palavras(texto,word_cloud_space,collocations,background_color,
   stopwords.update(["tweet","twitter", "rt"])
   stopwords.update(custom_stopwords)
 
-  
+  color, palette = texto_2_color_and_palette(font_color)
+  bg_color = texto_bg_2_color(background_color)
+  icone = texto_2_icon(icone_escolhido)
   stylecloud.gen_stylecloud(text=texto,
-                            icon_name='fas fa-dog',
-                            palette='colorbrewer.diverging.Spectral_11',
-                            background_color=background_color,
-                            gradient='horizontal',
-                            custom_stopwords = stopwords,
-                            output_name='wordcloud.png')
+                          icon_name=icone,
+                          colors=color,
+                          palette=palette,
+                          background_color=bg_color,
+                          gradient=gradiente,
+                          custom_stopwords = stopwords,
+                          output_name='wordcloud.png',
+                          max_words=custom_max_words,
+                          collocations=collocations,
+                          invert_mask=invertido,
+                          random_state = custom_seed)
 
   word_cloud_space.image('wordcloud.png')
-
- 
-
-
 
 hashtag,num_tweets,linguagem = slidebar()
 
@@ -117,39 +182,54 @@ word_cloud_space = st.empty()
 st.markdown('---')
 st.subheader('Parametros da nuvem de palavras:')
 
-custom_max_words = st.slider('Selecione o numero de palavras na nuvem de palavra', 20, 300, 100)
+custom_max_words = st.slider('Selecione o numero de palavras na nuvem de palavra:', 20, 500, 240)
 
 st.markdown(' ')
 ##Variaveis que o usuario vai poder editar wordcloud
-custom_stopwords = st.text_input('Stopwords customizadas separadas por virgula', str(hashtag[1:])+',') #Palavras que quer tirar da nuvem de palavras
+custom_stopwords = st.text_input('Stopwords customizadas separadas por virgula:', str(hashtag[1:])+',') #Palavras que quer tirar da nuvem de palavras
 custom_stopwords = custom_stopwords.replace(' ','').split(',')
 
 st.write(custom_stopwords)
-st.write(' ')
-st.write(' ')
 
-collocations = st.checkbox("Considerar palavras em conjunto")#
-st.write("> If true, same words can appear several times in the image, but if you disable that, you won't get 'black culture' or 'lets go'.")
+st.markdown(' ')
+st.markdown(' ')
 
-st.write(' ')
-st.write(' ')
+collocations = st.checkbox("Considerar palavras em conjunto.")#
+st.write("> If true, same words can appear several times in the image, but if you disable that, you won't get words like 'black culture' or 'lets go'.")
 
-gray_scale = st.checkbox("Cores das palavras em escala de cinza?")#
+st.markdown(' ')
+st.markdown(' ')
+icone_escolhido =  st.selectbox(
+    'Icone:',
+     ['Padrão (Nuvem)','Box','Circulo','Cerebro','Biohazard','Cachorro','Gato','Aranha','Fantasma','Twitter']) #cor de fundo so pode por enquanto 'black', 'white', 'red', 'blue'
+
+st.markdown(' ')
+st.markdown(' ')
+
+font_color =  st.selectbox(
+    'Qual cor das palavras:',
+     ['Azul','Vermelho','Amarelo','Branco','Gradiente - Cor Padrão','Gradiente - Escala de Cinza','Gradiente - Estados Unidos','Gradiente - Spectral','Gradiente - Bold','Gradiente - Pastel']) #cor de fundo
+
+gradiente =  st.selectbox(
+    'Se tem gradiente, vertical ou horizontal?',
+     ['horizontal','vertical']) #cor de fundo
+
 
 st.markdown(' ')
 background_color =  st.selectbox(
-    'Qual cor de fundo',
-     ['white','black','red','blue']) #cor de fundo so pode por enquanto 'black', 'white', 'red', 'blue'
+    'Qual cor de fundo:',
+     ['Preto','Azul','Branco','Vermelho']) #cor de fundo so pode por enquanto 'black', 'white', 'red', 'blue'
+
+invertido = st.checkbox("Inverter palavras pelo fundo")#
 
 st.markdown(' ')
 st.markdown(' ')
 ##Variaveis que o usuario vai poder editar wordcloud
-custom_seed = st.number_input('Seed WordCloud',  min_value=0, max_value=10, value=3) #Palavras que quer tirar da nuvem de palavras
+custom_seed = st.number_input('Seed WordCloud',  min_value=0, max_value=10, value=1) #Palavras que quer tirar da nuvem de palavras
+
 
 st.markdown(' ')
-
-
 if len(texto) > 2:
-  cria_nuvem_de_palavras(texto,word_cloud_space,collocations,background_color,custom_max_words,custom_stopwords,custom_seed,gray_scale)
+  cria_nuvem_de_palavras(texto,word_cloud_space,collocations,background_color,custom_max_words,custom_stopwords,custom_seed,font_color,invertido,icone_escolhido,gradiente)
 else:
-  word_cloud_space.markdown('Não encontramos palavras para sua busca! :(')
+  word_cloud_space.markdown("**Não encontramos palavras para sua busca! :(**")
