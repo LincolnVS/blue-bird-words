@@ -9,8 +9,7 @@ st.set_page_config(page_title=apptitle, page_icon=":cloud:",
      menu_items={
          'Get Help': 'https://github.com/LincolnVS/blue-bird-words',
          'Report a bug': "https://github.com/LincolnVS/blue-bird-words/issues/new",
-         'About': """ Blue Birds Word by [Lincoln Schreiber](https://github.com/lincolnvs) and [Vitor Fraga](https://github.com/vitorfraga)
-"""
+         'About': "Blue Birds Word by [Lincoln Schreiber](https://github.com/lincolnvs) and [Vitor Fraga](https://github.com/vitorfraga)"
      })
 
 # -- Set API keys
