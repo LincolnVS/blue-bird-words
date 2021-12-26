@@ -3,29 +3,43 @@ import os
 import tweepy
 import re
 
-with open("style.css") as f:
-        st.markdown('<style>{}</style>'.format(f.read()), unsafe_allow_html=True)
+# -- Set page config
+apptitle = 'Blue Bird Words'
+st.set_page_config(page_title=apptitle, page_icon=":cloud:",
+     menu_items={
+         'Get Help': 'https://github.com/LincolnVS/blue-bird-words',
+         'Report a bug': "https://github.com/LincolnVS/blue-bird-words/issues/new",
+         'About': """ Blue Birds Word by [Lincoln Schreiber](https://github.com/lincolnvs) and [Vitor Fraga](https://github.com/vitorfraga)
+"""
+     })
 
+# -- Set API keys
 api_key = st.secrets["api_key"]
 api_key_secret = st.secrets["api_key_secret"]
 access_token = st.secrets["access_token"]
 access_token_secret = st.secrets["access_token_secret"]
 
+# -- App
+
 def get_stopwords(linguagem = 'pt'):
     if linguagem == 'en':
         return ['on', "mightn't", 'yours', 't', 'myself', 'did', 'as', 'more', 'haven', 'very', 'are', 'again', 'both', 'against', "wasn't", 'some', 'does', "didn't", 'above', 'for', 'having', 'by', 'during', 'same', 'further', 'under', 'when', 'wasn', 'they', 'be', 'm', "doesn't", 'each', 'd', 'of', "that'll", 'you', 'herself', 'ours', 'doesn', "isn't", 'all', "won't", 'himself', "couldn't", 'which', 'have', 'that', 'before', 'into', 'so', 'your', 'who', 'these', 'then', 'she', 'didn', 'do', 'we', 'my', 'to', 'after', 'most', 'should', 'me', "haven't", 'them', 'once', 'with', 'has', "don't", 'other', "mustn't", 'were', 'from', "shouldn't", 'aren', 'this', "weren't", 'doing', 'mightn', "you'd", "you'll", 'he', 'or', 'between', "you've", 'own', 'weren', 'am', 'if', 'ourselves', 'about', 'no', 'ma', 'but', "she's", 'our', 'any', 'was', 'been', 'their', 'will', 'needn', 've', 'is', 'll', 'wouldn', 'through', 'what', 'shan', "shan't", 'hadn', "it's", 'why', 'won', 'itself', 'in', 'those', 'off', 'her', "should've", 'mustn', 'here', 'at', 'until', 'ain', 'nor', 'yourselves', 's', 'don', 'its', 'i', 'a', 'it', 'out', 'such', 'just', 're', "hadn't", 'themselves', 'had', 'an', 'shouldn', "needn't", 'y', 'yourself', 'than', 'not', 'the', "hasn't", 'where', 'up', 'hers', "you're", 'because', 'down', 'can', 'and', "aren't", 'his', 'now', 'theirs', 'while', 'being', 'only', 'below', 'hasn', 'o', 'whom', "wouldn't", 'isn', 'how', 'few', 'there', 'couldn', 'too', 'him', 'over']
-    elif linguagem == 'outra_linguagem':
-        return ['stopwords_da_outra_linguagem']
+    elif linguagem == 'Não':
+        return get_stopwords('pt') + get_stopwords('en')
     else: ## se n achar, devolve stopwords em portugues
         return ['houverei', 'seu', 'formos', 'há', 'pela', 'teu', 'seremos', 'estivesse', 'serei', 'numa', 'estejamos', 'tivemos', 'aquilo', 'houverá', 'teria', 'lhes', 'do', 'entre', 'aos', 'houverem', 'isso', 'for', 'muito', 'sou', 'seriam', 'fossem', 'tive', 'aquelas', 'os', 'foram', 'às', 'nossas', 'está', 'me', 'essas', 'seria', 'tinha', 'somos', 'tenha', 'sem', 'minha', 'estivéssemos', 'fôramos', 'tua', 'seja', 'meu', 'este', 'já', 'temos', 'houvermos', 'o', 'para', 'essa', 'isto', 'tém', 'com', 'como', 'será', 'que', 'estes', 'tem', 'pelos', 'houve', 'nossa', 'houver', 'vos', 'terei', 'fora', 'estiver', 'pelo', 'seríamos', 'tu', 'estávamos', 'um', 'dele', 'teve', 'pelas', 'tuas', 'aquele', 'pra', 'hei', 'hajam', 'ela', 'delas', 'forem', 'lhe', 'tivéramos', 'meus', 'fôssemos', 'qual', 'a', 'foi', 'dela', 'de', 'mas', 'também', 'fui', 'estivéramos', 'tenho', 'tivessem', 'terá', 'eles', 'teríamos', 'aqueles', 'estavam', 'no', 'estava', 'vocês', 'quem', 'tivesse', 'em', 'era', 'das', 'esta', 'estivera', 'houveremos', 'estão', 'esses', 'houvesse', 'você', 'estivermos', 'esteve', 'sua', 'teus', 'houvera', 'tiver', 'teriam', 'mesmo', 'estiverem', 'na', 'serão', 'Tweet', 'tenhamos', 'uma', 'Twitter', 'tiverem', 'ou', 'estiveram', 'estive', 'é', 'houvessem', 'teremos', 'tenham', 'deles', 'só', 'tiveram', 'sejam', 'esteja', 'as', 'eu', 'hão', 'seus', 'RT', 'não', 'nós', 'sejamos', 'nas', 'ele', 'minhas', 'mais', 'estivemos', 'havemos', 'tínhamos', 'houvéramos', 'suas', 'tinham', 'nos', 'depois', 'houveram', 'são', 'eram', 'houvemos', 'estas', 'houvéssemos', 'da', 'dos', 'num', 'estamos', 'nossos', 'nem', 'tivéssemos', 'hajamos', 'fomos', 'terão', 'por', 'ao', 'e', 'houveria', 'estou', 'houveríamos', 'se', 'até', 'fosse', 'houveriam', 'te', 'à', 'elas', 'nosso', 'éramos', 'houverão', 'tivermos', 'haja', 'aquela', 'tivera', 'esse', 'quando', 'estivessem', 'estejam', 'pra', 'para']
 
 def slidebar():
-    query = st.sidebar.text_input('Pesquisa', 'Brasil')
+    st.sidebar.write("## BLUE BIRD WORD")
+    query = st.sidebar.text_input('Pesquisa', 'Brasil').lower()
     num_tweets = st.sidebar.slider('Selecione o numero de tweets', 10, 100, 50)
     #data = st.date_input("Desde quando deseja pegar", datetime.date(2019, 7, 6))
     linguagem = st.sidebar.selectbox(
-    'Qual linguagem',
-        ['pt','en'])
+    'Filtrar por idioma',
+        ['Não','pt','en'])
+    st.sidebar.markdown("Se escolher *Filtrar por idioma*, o programa irá utilizar apenas **10 tweets**.")
+    if linguagem != 'Não':
+        num_tweets = 10
     return query,num_tweets,linguagem
          
 @st.cache(persist=True,suppress_st_warning=True)
@@ -45,7 +59,7 @@ def twitter_api(query,num_tweets,linguagem):
 
         for tweet in search['data']: #lang="pt", since="2017-04-03"
                 #print(tweet)
-                tweets.append(tweet['text']) if tweet['lang'] == linguagem else None
+                tweets.append(tweet['text']) if tweet['lang'] == linguagem or linguagem == 'Não' else None
         
         trys += 1
     
@@ -53,12 +67,12 @@ def twitter_api(query,num_tweets,linguagem):
     string_total_n_patterns = re.sub(r'(#|@)(\w+|)|(https:|http:)[^\s]+', '', string_total) 
 
     # Set the entire file to lower case
-    string_total_n_patterns = string_total_n_patterns.lower()
+    string_total_n_patternss = string_total_n_patterns.lower()
 
     # Replace the ' with nothing
-    string_total_n_patterns =  string_total_n_patterns.replace("`","")
+    string_total_n_patternsss =  string_total_n_patternss.replace("`","")
 
-    return string_total_n_patterns
+    return string_total_n_patternsss
 
 def texto_2_color_and_palette(text):
     if text == 'Gradiente - Estados Unidos':
@@ -162,9 +176,7 @@ def cria_nuvem_de_palavras(texto,word_cloud_space,collocations,background_color,
 
 query,num_tweets,linguagem = slidebar()
 
-st.write("""
-# BLUE BIRD WORD 
-""")
+st.write("## BLUE BIRD WORD (BBW)")
 
 st.write('Nuvem de palavras com a pesquisa: ', query)
 st.write("Total de ", num_tweets, ' tweets com essa pesquisa na linguagem ', linguagem)
@@ -181,8 +193,10 @@ custom_max_words = st.slider('Selecione o numero de palavras na nuvem de palavra
 
 st.markdown(' ')
 ##Variaveis que o usuario vai poder editar wordcloud
-custom_stopwords = st.text_input('Stopwords customizadas separadas por virgula:', str(query)+',') #Palavras que quer tirar da nuvem de palavras
-custom_stopwords = custom_stopwords.replace(' ','').split(',')
+custom_stopwords = st.text_input('Stopwords customizadas separadas por espaço ou virgula:', str(query)+',') #Palavras que quer tirar da nuvem de palavras
+
+custom_stopwords = custom_stopwords.replace(' ',',').split(',')
+custom_stopwords = [x for x in custom_stopwords if x != '']
 
 st.write(custom_stopwords)
 
