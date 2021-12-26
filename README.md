@@ -1,6 +1,7 @@
-# blue-bird-words
-blue bird words (BBW)
+# Blue Bird Words (BBW)
 
-Desenvolvedores: Lincoln Vinicius Schreiber ([@lincolnvs](https://github.com/lincolnvs)) e Vitor Fraga ([@vitorfraga](https://github.com/vitorfraga))
+Desenvolvedores: 
+- Lincoln V. Schreiber ([@lincolnvs](https://github.com/lincolnvs))
+- Vitor A. Fraga ([@vitorfraga](https://github.com/vitorfraga))
 
-Link temporário da aplicação: http://ec2-52-67-92-232.sa-east-1.compute.amazonaws.com:8501/
+Link da aplicação: https://share.streamlit.io/lincolnvs/blue-bird-words/app.py
