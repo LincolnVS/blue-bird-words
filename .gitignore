@@ -1,5 +1,6 @@
 wordcloud.png
-.env
+.streamlit/secrets.toml
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
