@@ -204,8 +204,8 @@ st.markdown(' ')
 st.markdown(' ')
 
 font_color =  st.selectbox(
-        'Qual cor das palavras:',
-         ['Azul','Vermelho','Amarelo','Branco','Gradiente - Cor Padrão','Gradiente - Escala de Cinza','Gradiente - Estados Unidos','Gradiente - Spectral','Gradiente - Bold','Gradiente - Pastel']) #cor de fundo
+        'Qual cor das palavras:', index=6,
+        options = ['Azul','Vermelho','Amarelo','Branco','Gradiente - Cor Padrão','Gradiente - Escala de Cinza','Gradiente - Estados Unidos','Gradiente - Spectral','Gradiente - Bold','Gradiente - Pastel']) #cor de fundo
 
 gradiente =  st.selectbox(
         'Se tem gradiente, vertical ou horizontal?',
