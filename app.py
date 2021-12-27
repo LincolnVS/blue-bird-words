@@ -14,8 +14,8 @@ st.set_page_config(page_title=apptitle, page_icon=":cloud:",
          'About': "Blue Birds Word by [Lincoln Schreiber](https://github.com/lincolnvs) and [Vitor Fraga](https://github.com/vitorfraga)"
      })
 
-with open(".streamlit/style.css") as f:
-    st.markdown('<style>{}</style>'.format(f.read()), unsafe_allow_html=True)
+# with open(".streamlit/style.css") as f:
+#     st.markdown('<style>{}</style>'.format(f.read()), unsafe_allow_html=True)
 
 
 # -- Set API keys
