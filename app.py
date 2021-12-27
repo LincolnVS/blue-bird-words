@@ -62,7 +62,6 @@ def request_twitter(query,max_tweets,lang):
     # Set the entire file to lower case, Replace the ' with nothing, Replace the \n with space
     final_string_n_patterns = final_string_n_patterns.lower().replace("`","").replace("\n"," ")
 
-    print(final_string_n_patterns)
     return final_string_n_patterns
 
 def create_wordcloud(tweets,word_cloud_space,collocations,background_color,custom_max_words,custom_stopwords,custom_seed,font_color,invertido,icone_escolhido,gradiente):
