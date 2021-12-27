@@ -6,12 +6,17 @@ import utils as u
 
 # -- Set page config
 apptitle = 'Blue Bird Words'
+
 st.set_page_config(page_title=apptitle, page_icon=":cloud:",
      menu_items={
          'Get Help': 'https://github.com/LincolnVS/blue-bird-words',
          'Report a bug': "https://github.com/LincolnVS/blue-bird-words/issues/new",
          'About': "Blue Birds Word by [Lincoln Schreiber](https://github.com/lincolnvs) and [Vitor Fraga](https://github.com/vitorfraga)"
      })
+
+with open(".streamlit/style.css") as f:
+    st.markdown('<style>{}</style>'.format(f.read()), unsafe_allow_html=True)
+
 
 # -- Set API keys
 api_key = st.secrets["api_key"]
@@ -23,11 +28,11 @@ access_token_secret = st.secrets["access_token_secret"]
 
 def slidebar():
     st.sidebar.write("## BLUE BIRD WORD")
-    query = st.sidebar.text_input('Search', 'Brasil').lower()
+    query = st.sidebar.text_input('Search:', 'Brasil').lower()
     max_tweets = st.sidebar.slider('Select the number of tweets', 10, 100, 50)
-    #data = st.date_input("Desde quando deseja pegar", datetime.date(2019, 7, 6))
+    
     lang = st.sidebar.selectbox(
-    'Filter by language',
+    'Filter by language:',
         ['no','pt','en'])
     st.sidebar.markdown("If you choose *Filter by language*, the program will use only **10 tweets**.")
     
@@ -94,19 +99,22 @@ def create_wordcloud(tweets,word_cloud_space,collocations,background_color,custo
 
 query,max_tweets,lang = slidebar()
 
-st.write("## BLUE BIRD WORD (BBW)")
+st.markdown("<h1 style='text-align: center;'>BLUE BIRD WORD (BBW)</h1>", unsafe_allow_html=True)
 
 if lang == 'no':
     text = f"Wordcloud using {max_tweets} tweets with '{query}' without filtering by language."
 else:
     text = f"Wordcloud using {max_tweets} tweets with '{query}' and with '{lang}' language filter"
-st.write(text)
+#st.write(text)
+st.markdown(f"<div style='text-align: center;'>{text}</div>", unsafe_allow_html=True)
 
 tweets = request_twitter(query,max_tweets,lang)
 
-container = st.container()
-word_cloud_space = container.empty()
-#st.write('NUVEMM DE PALAVRAS VAI APARECER AQUIII')
+# Placeholder to center the img and show wait message
+col1, col2, col3 = st.columns([1,6,1])
+col1.write("")
+word_cloud_space = col2.empty()
+col3.write("")
 
 st.markdown('---')
 st.subheader('Word cloud parameters:')
@@ -115,15 +123,13 @@ custom_max_words = st.slider('Select the number of words in the word cloud:', 1,
 
 st.markdown(' ')
 ##Variaveis que o usuario vai poder editar wordcloud
-custom_stopwords = st.text_input('Customized stopwords (*separated by space or comma*):', str(query)+',') #Palavras que quer tirar da nuvem de palavras
+custom_stopwords = u.text_field('Customized stopwords *(separated by space or comma)*:', [2,4], value = str(query)+',') #Palavras que quer tirar da nuvem de palavras
 
 custom_stopwords = custom_stopwords.replace(' ',',').split(',')
 custom_stopwords = [x for x in custom_stopwords if x != '']
 
-st.write(custom_stopwords)
+#st.write(custom_stopwords)
 
-st.markdown(' ')
-st.markdown(' ')
 icone_escolhido =  u.selectbox(
         'Icon:',
         options = u.icon_list() ) #cor de fundo so pode por enquanto 'black', 'white', 'red', 'blue'
@@ -159,7 +165,7 @@ with st.expander("Advanced options"):
 
 st.markdown(' ')
 
-with container:
+with col2:
     with st.spinner('Wait for it...'):
         if len(tweets) > 2:
             create_wordcloud(tweets,word_cloud_space,collocations,background_color,custom_max_words,custom_stopwords,custom_seed,font_color,invertido,icone_escolhido,gradient)
