@@ -27,7 +27,7 @@ def layout(*args):
         width=percent(100),
         text_align="center",
         height="60px",
-        opacity=0.6
+        opacity=0.8
     )
 
     style_hr = styles(
