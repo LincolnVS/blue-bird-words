@@ -3,6 +3,7 @@ import streamlit as st
 import os
 import re
 import utils as u
+import footer
 
 # -- Set page config
 apptitle = 'Blue Bird Words'
@@ -171,3 +172,5 @@ with col2:
             create_wordcloud(tweets,word_cloud_space,collocations,background_color,custom_max_words,custom_stopwords,custom_seed,font_color,invertido,icone_escolhido,gradient)
         else:
             word_cloud_space.markdown("**We can't find words for your search! :(**")
+
+footer.footer()
